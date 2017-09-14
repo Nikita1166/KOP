@@ -80,14 +80,18 @@ int main()
 	sf::Packet packet;
 	sf::Packet packet_stroke;
 
-	char type;
-	char mode = ' ';
+	char type, mode = ' ';
 	char buffer[2000];
+	int time_h = 0, time_g = 0;
 	size_t received;
 	
 	std::string text = "connect to: ";
 
 	std::cout << ip << std::endl;
+	std::cout << "Введите время хода (сек):" << std::endl;
+	std::cin >> time_h;
+	std::cout << "Введите время игры (сек):" << std::endl;
+	std::cin >> time_g;
 	std::cout << "Введите тип подключения:  c -клиент, s -сервер" << std::endl;
 	std::cin >> type;
 	if (type == 's'){
@@ -128,13 +132,9 @@ int main()
 	bool answer = false;
 	bool check = false;
 
-	int N = 0;
 	float x = 0.0, y = 0.0;
-	int p_x = 0, p_y = 0;
+	int N = 0, p_x = 0, p_y = 0, num = 0, counter_s = 0, counter_r = 0;
 	int mas[10][4];
-	int num = 0, counter = 0;
-	int f = 0;
-	int q = 0;
 
 	std::list<marker*>  markers;
 	std::list<marker*>::iterator it;
@@ -185,10 +185,27 @@ int main()
 		
 		sf::Event event;
 
+		unsigned int start_time_g = clock();
 		while (window.pollEvent(event))
 		{
+			unsigned int end_time_g = clock();
+			unsigned int search_time_g = end_time_g - start_time_g;
 			if (event.type == sf::Event::Closed)
 				window.close();
+			if (search_time_g > (time_g * 1000))	{
+				std::cout << "Время игры закончено" << std::endl;
+				std::cout << counter_s << " : " << counter_r << std::endl;
+				if (counter_s > counter_r)	{
+					std::cout << "Игра закончена вашей победой." << std::endl;
+				}
+				else if (counter_s > counter_r)	{
+					std::cout << "Игра закончена победой противника." << std::endl;
+				}
+				else if (counter_s = counter_r)	{
+					std::cout << "Игра закончена ничьёй." << std::endl;
+				}
+				window.close();
+			}
 
 			if (N == 10)	{
 				flag_break = false;
@@ -198,7 +215,7 @@ int main()
 					(event.key.code == sf::Mouse::Left)) {
 					unsigned int end_time = clock();
 					unsigned int search_time = end_time - start_time;
-					if (search_time > 5000)	{
+					if (search_time > (time_h * 1000))	{
 						if (mode == 's')	
 							mode = 'r';							
 						std::cout << "Время хода вышло" << std::endl;
@@ -215,16 +232,12 @@ int main()
 					flag = true;
 				}
 				
-				
-				
-				
-
-				if (counter == 20)	{
+				if (counter_s == 20)	{
 					x = 0;
 					y = 1;
 					packet << x << y;
 					socket.send(packet);
-					event.type = sf::Event::Closed;
+					window.close();
 					std::cout << "Игра закончена вашей победой." << std::endl;
 				}
 
@@ -238,7 +251,7 @@ int main()
 						if (packet_stroke >> answer)	{
 							if (answer == true)	{
 								markers.push_back(new marker(answer, 0, 0, 30, 30, x, y));
-								counter++;
+								counter_s++;
 								mode = 's';
 							}
 							else{
@@ -255,7 +268,7 @@ int main()
 					(socket.receive(packet));
 					if (packet >> x >> y)	{
 						if (y == 1)	{
-							event.type = sf::Event::Closed;
+							window.close();
 							std::cout << "Игра закончена победой противника." << std::endl;
 						}
 						else if (x == 1)	{ mode = 's'; }
@@ -267,6 +280,7 @@ int main()
 									(y >= mas[i][1]) && (y <= mas[i][3]))	{
 									flag_break = true;
 									markers.push_back(new marker(flag_break, 0, 0, 30, 30, x, y));
+									counter_r++;
 									packet_stroke << true;
 									socket.send(packet_stroke);
 									mode = 'r';
