@@ -88,12 +88,14 @@ int main()
 	std::string text = "connect to: ";
 
 	std::cout << ip << std::endl;
-	std::cout << "¬ведите врем€ хода (сек):" << std::endl;
-	std::cin >> time_h;
-	std::cout << "¬ведите врем€ игры (сек):" << std::endl;
-	std::cin >> time_g;
 	std::cout << "¬ведите тип подключени€:  c -клиент, s -сервер" << std::endl;
 	std::cin >> type;
+	if (type == 's')	{
+		std::cout << "¬ведите врем€ хода (сек):" << std::endl;
+		std::cin >> time_h;
+		std::cout << "¬ведите врем€ игры (сек):" << std::endl;
+		std::cin >> time_g;
+	}
 	if (type == 's'){
 		sf::TcpListener listener;
 		listener.listen(2000);
